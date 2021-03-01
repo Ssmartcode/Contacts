@@ -19,17 +19,23 @@ const setCardsData = (cards) => {
   localStorage.setItem("cards", JSON.stringify(cards));
 };
 // ! ------------------------
-
 // cards array
-let cards = [];
+let cards = getCardsData();
 // currcard
-let currentCard = 0;
+let currentCard = 1;
 // uploaded image
 let imageFile = "./images/placeholder.png";
 
 console.log(cards);
 // UTILITY FUNCTIONS
 
+// update the slider counter below the cards
+const updateSliderCounter = () => {
+  const current = document.querySelector(".cards-counter .current");
+  const total = document.querySelector(".cards-counter .total");
+  current.textContent = currentCard;
+  total.textContent = cards.length;
+};
 // close form
 const closeForm = () => {
   newCardForm.classList.add("hidden");
@@ -52,22 +58,15 @@ const removeAll = (cleanArr = false) => {
 const renderCards = () => {
   removeAll();
   cards.forEach((card) => {
-    const { id } = card.dataset;
-    if (+id !== currentCard) card.classList.add("left");
-    cardsDIV.append(card);
-  });
-};
-
-// create card DOM Element and add it to the cards list
-const createCard = (cardInfo) => {
-  let { name, relation, phone, email, website, image } = cardInfo;
-  const id = cards.length + 1;
-  const card = document.createElement("div");
-  card.classList.add("card");
-  card.setAttribute("data-id", id);
-  card.insertAdjacentHTML(
-    "beforeend",
-    `<div class="card-inner">
+    const { id, name, relation, phone, email, website, image } = card;
+    const cardElement = document.createElement("div");
+    if (id < currentCard) cardElement.classList.add("left");
+    if (id > currentCard) cardElement.classList.add("right");
+    cardElement.classList.add("card");
+    cardElement.setAttribute("data-id", id);
+    cardElement.insertAdjacentHTML(
+      "beforeend",
+      `<div class="card-inner">
       <div class="card-face">
         <div class="profile-image"><img src=${image}></div>
         <div class="about">
@@ -81,10 +80,30 @@ const createCard = (cardInfo) => {
         <p><span class="highlight">Website</span>: ${website}</p>
       </div>
     </div>`
-  );
-  currentCard = id;
+    );
+    cardsDIV.append(cardElement);
+  });
+  updateSliderCounter();
+};
+renderCards();
+
+// create card DOM Element and add it to the cards list
+const createCard = () => {
+  const id = cards.length + 1;
+  const card = {
+    id: id,
+    name: document.getElementById("name").value,
+    relation: document.getElementById("relation").value,
+    phone: document.getElementById("phone").value,
+    email: document.getElementById("email").value,
+    website: document.getElementById("website").value,
+    image: imageFile,
+  };
   cards.push(card);
+  currentCard = id;
   setCardsData(cards);
+
+  // );
 };
 
 // SLIDER
@@ -111,51 +130,39 @@ const slideRight = () => {
   currentCard++;
 };
 
-// update the slider counter below the cards
-const updateSliderCounter = () => {
-  const current = document.querySelector(".cards-counter .current");
-  const total = document.querySelector(".cards-counter .total");
-  current.textContent = currentCard;
-  total.textContent = cards.length;
-};
-
 // EVENT LISTENERS
-
 // submit button
 submitButton.addEventListener("click", async (e) => {
   e.preventDefault();
-  const cardInfo = {
-    name: document.getElementById("name").value,
-    relation: document.getElementById("relation").value,
-    phone: document.getElementById("phone").value,
-    email: document.getElementById("email").value,
-    website: document.getElementById("website").value,
-    image: imageFile,
-  };
-  createCard(cardInfo);
+  createCard();
   renderCards();
-  updateSliderCounter();
   newCardForm.classList.add("hidden");
 });
+
 // get image from user
 document.getElementById("image").addEventListener("change", function () {
   imageFile = URL.createObjectURL(this.files[0]);
 });
+
 // add button
 addButton.addEventListener("click", (e) => {
   newCardForm.classList.remove("hidden");
 });
+
 // next and prev button
 nextButton.addEventListener("click", () => {
   slideRight();
   updateSliderCounter();
 });
+
 prevButton.addEventListener("click", () => {
   slideLeft();
   updateSliderCounter();
 });
+
 // close form button
 closeFormButton.addEventListener("click", () => closeForm());
+
 // clearButton
 clearButton.addEventListener("click", () => {
   removeAll(true);
