@@ -1,0 +1,233 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  --dark-color: #485461;
+  --light-color: #f4f4f4;
+  --secondary-color: rgb(252, 151, 115);
+  --background: linear-gradient(315deg, #485461 0%, #28313b 74%);
+}
+main {
+  position: relative;
+}
+body {
+  background-color: var(--dark-color);
+  background-image: var(--background);
+  text-align: center;
+  color: var(--light-color);
+  font-family: "Open Sans", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+p {
+  font-size: 1.3rem;
+}
+/* utilities */
+.button {
+  border: 1px solid var(--light-color);
+  color: var(--light-color);
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.button:hover {
+  border: 1px solid var(--secondary-color);
+}
+.highlight {
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+/* TITLE */
+.title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.title strong {
+  font-size: 1.2rem;
+}
+
+/* CARD */
+.cards {
+  position: relative;
+  margin: 2rem 0;
+  width: 500px;
+  height: 300px;
+}
+.cards .card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: transparent;
+  transition: transform 0.5s, opacity 1s;
+  perspective: 1000px;
+}
+.card .card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s ease-in-out;
+}
+.cards .card:hover .card-inner {
+  transform: rotateY(180deg);
+}
+.card .card-face,
+.card .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.4);
+  background: var(--dark-color);
+  display: flex;
+}
+/* card face */
+.card-face .profile-image {
+  flex-basis: 50%;
+}
+.card-face .about {
+  flex-basis: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.about--name {
+  text-transform: capitalize;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+
+/* card back */
+.card .card-back {
+  transform: rotateY(180deg);
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+/* card scrolling classes */
+.cards .left {
+  transform: translateX(-100%);
+  visibility: hidden;
+  opacity: 0;
+}
+.cards .right {
+  transform: translateX(100%);
+  visibility: hidden;
+  opacity: 0;
+}
+/* ARROWS */
+.arrows {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.arrows .prev,
+.next {
+  margin: 0 1rem;
+  cursor: pointer;
+}
+/* BUTTONS ROW */
+.buttons-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+.buttons-row button i {
+  margin-right: 0.75rem;
+}
+.new-card--button {
+  font-size: 0.8rem;
+  left: 0;
+}
+.clear-button {
+}
+
+/* FORM */
+.new-card--form {
+  background-color: var(--dark-color);
+  background-image: var(--background);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: all 0.4s ease-in-out;
+}
+.form-title {
+  margin: 2rem 0;
+  text-align: center;
+}
+.form-title i {
+  font-size: 70%;
+  color: var(--secondary-color);
+}
+form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+form label {
+  font-weight: 600;
+}
+form input {
+  font-size: 1.1rem;
+  display: block;
+  padding: 0.5rem;
+  margin: 1rem 0;
+  width: 100%;
+}
+form input[type="file"] {
+  cursor: pointer;
+  display: none;
+}
+form .upload-image {
+  display: block;
+  cursor: pointer;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: var(--light-color);
+  color: var(--dark-color);
+  font-size: 1.1rem;
+}
+form .button {
+  background: transparent;
+  color: var(--light-color);
+  font-size: 1.3rem;
+  padding: 0.5rem 1rem;
+  display: block;
+  margin: 2rem auto;
+  grid-column-end: span 2;
+}
+/* BUTTON - CLOSE FORM */
+.close-form {
+  cursor: pointer;
+}
+.hidden {
+  visibility: hidden;
+  transform: translateX(-100%);
+}
