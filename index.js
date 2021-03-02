@@ -18,11 +18,17 @@ const getCardsData = () => {
 const setCardsData = (cards) => {
   localStorage.setItem("cards", JSON.stringify(cards));
 };
+// const setImage = (image, cardID) => {
+//   localStorage.setItem(`image${cardID + ""}`, image);
+// };
+// const getImage = () => {
+//   console.log(localStorage.getItem(currentCard + ""));
+// };
 // ! ------------------------
 // cards array
 let cards = getCardsData();
 // currcard
-let currentCard = 1;
+let currentCard = cards ? cards.length : 0;
 // uploaded image
 let imageFile = "./images/placeholder.png";
 
@@ -117,6 +123,7 @@ const slideLeft = () => {
     if (+id === currentCard) child.classList.add("right");
   });
   currentCard--;
+  // getImage();
 };
 
 //Right
@@ -128,6 +135,7 @@ const slideRight = () => {
     if (+id === currentCard + 1) child.classList.remove("left", "right");
   });
   currentCard++;
+  // getImage();
 };
 
 // EVENT LISTENERS
@@ -142,6 +150,7 @@ submitButton.addEventListener("click", async (e) => {
 // get image from user
 document.getElementById("image").addEventListener("change", function () {
   imageFile = URL.createObjectURL(this.files[0]);
+  // setImage(currentCard, imageFile);
 });
 
 // add button
