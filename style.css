@@ -12,17 +12,26 @@
 main {
   position: relative;
 }
+html,
+body {
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
 body {
   background-color: var(--dark-color);
   background-image: var(--background);
+  background-repeat: no-repeat;
   text-align: center;
   color: var(--light-color);
   font-family: "Open Sans", sans-serif;
+}
+.wrapper {
   display: flex;
+  height: 100%;
+  width: 100%;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  overflow: hidden;
 }
 img {
   width: 100%;
@@ -87,9 +96,13 @@ p {
   transform-style: preserve-3d;
   transition: transform 0.7s ease-in-out;
 }
-.cards .card:hover .card-inner {
+
+.rotate {
   transform: rotateY(180deg);
 }
+/* .cards .card:hover .card-inner {
+  transform: rotateY(180deg);
+} */
 .card .card-face,
 .card .card-back {
   position: absolute;
@@ -160,8 +173,6 @@ p {
   font-size: 0.8rem;
   left: 0;
 }
-.clear-button {
-}
 
 /* FORM */
 .new-card--form {
@@ -230,4 +241,32 @@ form .button {
 .hidden {
   visibility: hidden;
   transform: translateX(-100%);
+}
+@media (max-width: 600px) {
+  .new-card--form {
+    overflow: scroll;
+    display: block;
+  }
+  .new-card--form form {
+    padding: 0 1rem;
+    display: block;
+  }
+  .wrapper {
+    display: block;
+    padding: 0.5rem 1rem;
+  }
+
+  /* CARD */
+  .cards {
+    width: 100%;
+    height: 400px;
+  }
+  .card .card-face {
+    flex-direction: column;
+  }
+  .card .card-face img {
+    width: 100%;
+    height: 300px;
+    object-position: top;
+  }
 }

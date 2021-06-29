@@ -18,13 +18,9 @@ const getCardsData = () => {
 const setCardsData = (cards) => {
   localStorage.setItem("cards", JSON.stringify(cards));
 };
-// const setImage = (image, cardID) => {
-//   localStorage.setItem(`image${cardID + ""}`, image);
-// };
-// const getImage = () => {
-//   console.log(localStorage.getItem(currentCard + ""));
-// };
+
 // ! ------------------------
+
 // cards array
 let cards = getCardsData();
 // currcard
@@ -176,4 +172,12 @@ closeFormButton.addEventListener("click", () => closeForm());
 clearButton.addEventListener("click", () => {
   removeAll(true);
   updateSliderCounter();
+});
+
+// click on card to turn it
+cardsDIV.addEventListener("click", (e) => {
+  const card = e.target.closest(".card");
+  const inner = card.querySelector(".card-inner");
+  if (inner.classList.contains("rotate")) inner.classList.remove("rotate");
+  else inner.classList.add("rotate");
 });
