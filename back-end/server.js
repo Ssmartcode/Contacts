@@ -2,12 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+require("dotenv").config();
 
 mongoose
-  .connect(
-    "mongodb+srv://andrei-admin:MamaTata@2@cluster0.zapps.mongodb.net/Contacts?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  .connect(process.env.DB_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connected to DB"))
   .catch((err) => console.log("Could not connect to DB\n", err));
 

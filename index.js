@@ -22,7 +22,12 @@ const getCardsData = () => {
 const setCardsData = (cards) => {
   localStorage.setItem("cards", JSON.stringify(cards));
 };
-
+const setToken = (token) => {
+  localStorage.setItem("token", token);
+};
+const getToken = () => {
+  localStorage.getItem("token");
+};
 // ! ------------------------
 
 const token = localStorage.getItem("token");
@@ -37,7 +42,6 @@ let currentCard = cards ? cards.length : 0;
 // uploaded image
 let imageFile;
 
-console.log(cards);
 // UTILITY FUNCTIONS
 
 // update the slider counter below the cards
@@ -140,12 +144,12 @@ const slideRight = () => {
     if (+id === currentCard + 1) child.classList.remove("left", "right");
   });
   currentCard++;
-  // getImage();
+  console.log(data.userName);
 };
 
 // ! EVENTS LISTENERS
 
-// HANLE AUTHENTICATION
+// HANDLE AUTHENTICATION
 let signupRequest;
 
 loginButton.addEventListener("click", () => (signupRequest = false));
@@ -164,7 +168,16 @@ userAuth.addEventListener("submit", async (e) => {
     },
     body: JSON.stringify({ userName, userPassword }),
   });
-  console.log(response.status);
+
+  const data = await response.json();
+  if (response.status === 200 || response.status === 201) {
+    setToken(data.token);
+    e.target.submit();
+  } else {
+    const errorText = e.target.parentNode.querySelector(".error-message");
+    errorText.classList.remove("hidden");
+    errorText.innerText = `Error: ${data.message}`;
+  }
 });
 
 // get image from new contact form and store it in a global variable

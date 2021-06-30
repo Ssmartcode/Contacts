@@ -58,6 +58,16 @@ p {
   color: var(--secondary-color);
   font-weight: 600;
 }
+.error-message {
+  border: 1px solid var(--light-color);
+  color: var(--secondary-color);
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+}
+.error-message.hidden {
+  visibility: hidden;
+}
 /* TITLE */
 .title {
   display: flex;
