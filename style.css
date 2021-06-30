@@ -175,7 +175,7 @@ p {
 }
 
 /* FORM */
-.new-card--form {
+.form-slide {
   background-color: var(--dark-color);
   background-image: var(--background);
   display: flex;
@@ -242,12 +242,17 @@ form .button {
   visibility: hidden;
   transform: translateX(-100%);
 }
+.login-button,
+.signup-button {
+  margin: 0 2rem;
+  font-size: 1.1rem;
+}
 @media (max-width: 600px) {
-  .new-card--form {
+  .form-slide {
     overflow: scroll;
     display: block;
   }
-  .new-card--form form {
+  .form-slide form {
     padding: 0 1rem;
     display: block;
   }

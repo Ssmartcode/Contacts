@@ -1,11 +1,15 @@
 const addButton = document.querySelector(".new-card--button");
-const newCardForm = document.querySelector(".new-card--form");
+const newCardForm = document.querySelector(".form-slide.contact");
+const userForm = document.querySelector(".form-slide.user");
+const newContact = document.getElementById("new-contact");
+const userAuth = document.getElementById("user-auth");
 const cardsDIV = document.querySelector(".cards");
 const nextButton = document.querySelector(".arrows .next");
 const prevButton = document.querySelector(".arrows .prev");
 const closeFormButton = document.querySelector(".close-form");
-const submitButton = document.querySelector("button[type=submit]");
 const clearButton = document.querySelector(".clear-button");
+const loginButton = document.querySelector(".login-button");
+const signupButton = document.querySelector(".signup-button");
 
 // ! Local storage functions
 //get cards array from local storage
@@ -21,12 +25,17 @@ const setCardsData = (cards) => {
 
 // ! ------------------------
 
+const token = localStorage.getItem("token");
+if (token) {
+  userForm.classList.add("hidden");
+} else userForm.classList.remove("hidden");
+
 // cards array
 let cards = getCardsData();
 // currcard
 let currentCard = cards ? cards.length : 0;
 // uploaded image
-let imageFile = "./images/placeholder.png";
+let imageFile;
 
 console.log(cards);
 // UTILITY FUNCTIONS
@@ -70,7 +79,7 @@ const renderCards = () => {
       "beforeend",
       `<div class="card-inner">
       <div class="card-face">
-        <div class="profile-image"><img src=${image}></div>
+        <div class="profile-image"><img src=http:localhost:5000/${card.image}></div>
         <div class="about">
             <p class="about--name">${name}</p>
             <p class="about--description">${relation}</p>
@@ -89,24 +98,24 @@ const renderCards = () => {
 };
 renderCards();
 
-// create card DOM Element and add it to the cards list
-const createCard = () => {
-  const id = cards.length + 1;
-  const card = {
-    id: id,
-    name: document.getElementById("name").value,
-    relation: document.getElementById("relation").value,
-    phone: document.getElementById("phone").value,
-    email: document.getElementById("email").value,
-    website: document.getElementById("website").value,
-    image: imageFile,
-  };
-  cards.push(card);
-  currentCard = id;
-  setCardsData(cards);
+// // create card DOM Element and add it to the cards list
+// const createCard = () => {
+//   const id = cards.length + 1;
+//   const card = {
+//     id: id,
+//     name: document.getElementById("name").value,
+//     relation: document.getElementById("relation").value,
+//     phone: document.getElementById("phone").value,
+//     email: document.getElementById("email").value,
+//     website: document.getElementById("website").value,
+//     image: imageFile,
+//   };
+//   cards.push(card);
+//   currentCard = id;
+//   setCardsData(cards);
 
-  // );
-};
+//   // );
+// };
 
 // SLIDER
 
@@ -134,19 +143,59 @@ const slideRight = () => {
   // getImage();
 };
 
-// EVENT LISTENERS
-// submit button
-submitButton.addEventListener("click", async (e) => {
+// ! EVENTS LISTENERS
+
+// HANLE AUTHENTICATION
+let signupRequest;
+
+loginButton.addEventListener("click", () => (signupRequest = false));
+signupButton.addEventListener("click", () => (signupRequest = true));
+
+userAuth.addEventListener("submit", async (e) => {
   e.preventDefault();
-  createCard();
-  renderCards();
-  newCardForm.classList.add("hidden");
+  const userName = document.getElementById("username").value;
+
+  const userPassword = document.getElementById("password").value;
+  const path = signupRequest ? "signup" : "login";
+  const response = await fetch(`http://localhost:5000/users/${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ userName, userPassword }),
+  });
+  console.log(response.status);
 });
 
-// get image from user
-document.getElementById("image").addEventListener("change", function () {
-  imageFile = URL.createObjectURL(this.files[0]);
-  // setImage(currentCard, imageFile);
+// get image from new contact form and store it in a global variable
+document.getElementById("contactImage").addEventListener("change", (e) => {
+  imageFile = e.target.files[0];
+});
+
+// CREATE NEW CONTACT
+newContact.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const contactName = document.getElementById("contactName").value;
+  const contactRelation = document.getElementById("contactRelation").value;
+  const contactPhone = document.getElementById("contactPhone").value;
+  const contactEmail = document.getElementById("contactEmail").value;
+  const contactWebsite = document.getElementById("contactWebsite").value;
+
+  const formData = new FormData();
+  formData.append("contactName", contactName);
+  formData.append("contactEmail", contactEmail);
+  formData.append("contactRelation", contactRelation);
+  formData.append("contactPhone", contactPhone);
+  formData.append("contactWebsite", contactWebsite);
+  formData.append("contactImage", imageFile);
+
+  const response = await fetch("http://localhost:5000/contacts", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await response.json();
+  console.log(data);
 });
 
 // add button
