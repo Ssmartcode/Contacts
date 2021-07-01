@@ -5,6 +5,8 @@ const router = express.Router();
 
 contactsController = require("../controllers/contacts");
 
+router.use(require("../middleware/jwt"));
+
 router.get("/", contactsController.get);
 
 router.post("/", imageUpload.single("contactImage"), contactsController.create);

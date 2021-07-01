@@ -7,27 +7,31 @@ const cardsDIV = document.querySelector(".cards");
 const nextButton = document.querySelector(".arrows .next");
 const prevButton = document.querySelector(".arrows .prev");
 const closeFormButton = document.querySelector(".close-form");
-const clearButton = document.querySelector(".clear-button");
-const loginButton = document.querySelector(".login-button");
+// const clearButton = document.querySelector(".clear-button");
 const signupButton = document.querySelector(".signup-button");
+const loginButton = document.querySelector(".login-button");
+const logoutButton = document.querySelector(".logout-button");
 
 // ! Local storage functions
 //get cards array from local storage
 const getCardsData = () => {
   const cards = JSON.parse(localStorage.getItem("cards"));
-  return cards === null ? [] : cards;
+  return cards;
 };
 
 // add cards array to local storage
 const setCardsData = (cards) => {
+  if (!cards) cards = [];
   localStorage.setItem("cards", JSON.stringify(cards));
 };
 const setToken = (token) => {
   localStorage.setItem("token", token);
 };
 const getToken = () => {
-  localStorage.getItem("token");
+  const token = localStorage.getItem("token");
+  return token;
 };
+
 // ! ------------------------
 
 const token = localStorage.getItem("token");
@@ -72,27 +76,35 @@ const removeAll = (cleanArr = false) => {
 // Rerender list of cards on DOM
 const renderCards = () => {
   removeAll();
-  cards.forEach((card) => {
-    const { id, name, relation, phone, email, website, image } = card;
+  cards.forEach((card, index) => {
+    const position = index + 1;
+    const {
+      contactName,
+      contactRelation,
+      contactPhone,
+      contactEmail,
+      contactWebsite,
+      contactImage,
+    } = card;
     const cardElement = document.createElement("div");
-    if (id < currentCard) cardElement.classList.add("left");
-    if (id > currentCard) cardElement.classList.add("right");
+    if (position < currentCard) cardElement.classList.add("left");
+    if (position > currentCard) cardElement.classList.add("right");
     cardElement.classList.add("card");
-    cardElement.setAttribute("data-id", id);
+    cardElement.setAttribute("data-position", position);
     cardElement.insertAdjacentHTML(
       "beforeend",
       `<div class="card-inner">
       <div class="card-face">
-        <div class="profile-image"><img src=http:localhost:5000/${card.image}></div>
+        <div class="profile-image"><img src=http://localhost:5000/${contactImage}></div>
         <div class="about">
-            <p class="about--name">${name}</p>
-            <p class="about--description">${relation}</p>
+            <p class="about--name">${contactName}</p>
+            <p class="about--description">${contactRelation}</p>
         </div>
       </div>
       <div class="card-back">
-        <p><span class="highlight">Phone Number:</span> ${phone}</p>
-        <p><span class="highlight">Email address:</span> ${email}</p>
-        <p><span class="highlight">Website</span>: ${website}</p>
+        <p><span class="highlight">Phone Number:</span> ${contactPhone}</p>
+        <p><span class="highlight">Email address:</span> ${contactEmail}</p>
+        <p><span class="highlight">Website</span>: ${contactWebsite}</p>
       </div>
     </div>`
     );
@@ -100,51 +112,29 @@ const renderCards = () => {
   });
   updateSliderCounter();
 };
-renderCards();
-
-// // create card DOM Element and add it to the cards list
-// const createCard = () => {
-//   const id = cards.length + 1;
-//   const card = {
-//     id: id,
-//     name: document.getElementById("name").value,
-//     relation: document.getElementById("relation").value,
-//     phone: document.getElementById("phone").value,
-//     email: document.getElementById("email").value,
-//     website: document.getElementById("website").value,
-//     image: imageFile,
-//   };
-//   cards.push(card);
-//   currentCard = id;
-//   setCardsData(cards);
-
-//   // );
-// };
+if (cards) renderCards(cards);
 
 // SLIDER
-
 // left
 const slideLeft = () => {
   if (cards.length === 0 || currentCard === 1) return;
   cardsDIV.childNodes.forEach((child) => {
-    const { id } = child.dataset;
-    if (+id === currentCard - 1) child.classList.remove("left", "right");
-    if (+id === currentCard) child.classList.add("right");
+    const { position } = child.dataset;
+    if (+position === currentCard - 1) child.classList.remove("left", "right");
+    if (+position === currentCard) child.classList.add("right");
   });
   currentCard--;
-  // getImage();
 };
 
 //Right
 const slideRight = () => {
   if (cards.length === 0 || currentCard === cards.length) return;
   cardsDIV.childNodes.forEach((child) => {
-    const { id } = child.dataset;
-    if (+id === currentCard) child.classList.add("left");
-    if (+id === currentCard + 1) child.classList.remove("left", "right");
+    const { position } = child.dataset;
+    if (+position === currentCard) child.classList.add("left");
+    if (+position === currentCard + 1) child.classList.remove("left", "right");
   });
   currentCard++;
-  console.log(data.userName);
 };
 
 // ! EVENTS LISTENERS
@@ -161,7 +151,7 @@ userAuth.addEventListener("submit", async (e) => {
 
   const userPassword = document.getElementById("password").value;
   const path = signupRequest ? "signup" : "login";
-  const response = await fetch(`http://localhost:5000/users/${path}`, {
+  const userResponse = await fetch(`http://localhost:5000/users/${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -169,9 +159,17 @@ userAuth.addEventListener("submit", async (e) => {
     body: JSON.stringify({ userName, userPassword }),
   });
 
-  const data = await response.json();
-  if (response.status === 200 || response.status === 201) {
-    setToken(data.token);
+  const userData = await userResponse.json();
+  if (userResponse.status === 200 || userResponse.status === 201) {
+    setToken(userData.token);
+    const contactsResponse = await fetch("http://localhost:5000/contacts", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${userData.token}`,
+      },
+    });
+    const contactsData = await contactsResponse.json();
+    setCardsData(contactsData.contacts);
     e.target.submit();
   } else {
     const errorText = e.target.parentNode.querySelector(".error-message");
@@ -188,6 +186,10 @@ document.getElementById("contactImage").addEventListener("change", (e) => {
 // CREATE NEW CONTACT
 newContact.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  const token = getToken();
+  if (!token) return;
+
   const contactName = document.getElementById("contactName").value;
   const contactRelation = document.getElementById("contactRelation").value;
   const contactPhone = document.getElementById("contactPhone").value;
@@ -204,11 +206,23 @@ newContact.addEventListener("submit", async (e) => {
 
   const response = await fetch("http://localhost:5000/contacts", {
     method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     body: formData,
   });
 
   const data = await response.json();
-  console.log(data);
+  if (response.status === 200 || response.status === 201) {
+    const id = cards.length + 1;
+    cards.push(response.contact);
+    currentCard = id;
+    e.target.submit();
+  } else {
+    const errorText = e.target.parentNode.querySelector(".error-message");
+    errorText.classList.remove("hidden");
+    errorText.innerText = `Error: ${data.message}`;
+  }
 });
 
 // add button
@@ -231,9 +245,16 @@ prevButton.addEventListener("click", () => {
 closeFormButton.addEventListener("click", () => closeForm());
 
 // clearButton
-clearButton.addEventListener("click", () => {
-  removeAll(true);
-  updateSliderCounter();
+// clearButton.addEventListener("click", () => {
+//   removeAll(true);
+//   updateSliderCounter();
+// });
+
+//logout
+logoutButton.addEventListener("click", (e) => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("cards");
+  userForm.classList.remove("hidden");
 });
 
 // click on card to turn it

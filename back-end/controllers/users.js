@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 // signup
 exports.signup = async (req, res, next) => {
   const { userName, userPassword } = req.body;
-  const user = new User({ userName, userPassword });
+  const user = new User({ userName, userPassword, contacts: [] });
   try {
     await user.save();
   } catch (err) {
@@ -26,9 +26,7 @@ exports.login = async (req, res, next) => {
   if (!user) return res.status(404).json({ message: "User not found" });
   if (user.userPassword === userPassword) {
     // create a token for the user
-    const token = jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
-      expiresIn: "30m",
-    });
+    const token = jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET);
     return res.status(200).json({
       token,
       userName: user.userName,

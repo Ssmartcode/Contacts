@@ -7,6 +7,7 @@ const ContactSchema = mongoose.Schema({
   contactEmail: { type: String, require: true },
   contactWebsite: { type: String, require: true },
   contactImage: { type: String, require: true },
+  contactOwner: { type: mongoose.Types.ObjectId, ref: "User" },
 });
 
 module.exports = mongoose.model("Contact", ContactSchema);
