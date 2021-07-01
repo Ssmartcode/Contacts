@@ -46,5 +46,25 @@ exports.create = async (req, res, next) => {
 };
 
 exports.delete = async (req, res, next) => {
-  res.json({ message: "card deleted" });
+  const { userId } = req.userData;
+  const contactId = req.params.id;
+
+  let contact;
+  try {
+    contact = await Contact.findById(contactId);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+  if (contact.contactOwner.toString() === userId.toString()) {
+    try {
+      await Contact.findByIdAndDelete(contactId);
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
+    }
+  } else {
+    return res
+      .status(422)
+      .json({ message: "You are not allowed to delete this" });
+  }
+  res.status(200).json({ message: "card deleted " + contactId });
 };

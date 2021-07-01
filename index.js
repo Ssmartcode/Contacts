@@ -1,3 +1,4 @@
+const loadingOverlay = document.querySelector(".loading");
 const addButton = document.querySelector(".new-card--button");
 const newCardForm = document.querySelector(".form-slide.contact");
 const userForm = document.querySelector(".form-slide.user");
@@ -7,7 +8,6 @@ const cardsDIV = document.querySelector(".cards");
 const nextButton = document.querySelector(".arrows .next");
 const prevButton = document.querySelector(".arrows .prev");
 const closeFormButton = document.querySelector(".close-form");
-// const clearButton = document.querySelector(".clear-button");
 const signupButton = document.querySelector(".signup-button");
 const loginButton = document.querySelector(".login-button");
 const logoutButton = document.querySelector(".logout-button");
@@ -45,6 +45,12 @@ let imageFile;
 
 // UTILITY FUNCTIONS
 
+//display loading overlay
+const isLoading = (loading) => {
+  if (loading) loadingOverlay.classList.remove("hide");
+  else loadingOverlay.classList.add("hide");
+};
+
 // update the slider counter below the cards
 const updateSliderCounter = () => {
   const current = document.querySelector(".cards-counter .current");
@@ -52,6 +58,7 @@ const updateSliderCounter = () => {
   current.textContent = currentCard;
   total.textContent = cards.length;
 };
+
 // close form
 const closeForm = () => {
   newCardForm.classList.add("hidden");
@@ -76,6 +83,7 @@ const renderCards = () => {
   cards.forEach((card, index) => {
     const position = index + 1;
     const {
+      _id: id,
       contactName,
       contactRelation,
       contactPhone,
@@ -96,6 +104,7 @@ const renderCards = () => {
         <div class="about">
             <p class="about--name">${contactName}</p>
             <p class="about--description">${contactRelation}</p>
+            <i class="delete-card fas fa-times" data-id=${id}></i>
         </div>
       </div>
       <div class="card-back">
@@ -143,6 +152,7 @@ loginButton.addEventListener("click", () => (signupRequest = false));
 signupButton.addEventListener("click", () => (signupRequest = true));
 
 userAuth.addEventListener("submit", async (e) => {
+  isLoading(true);
   e.preventDefault();
   const userName = document.getElementById("username").value;
 
@@ -167,17 +177,21 @@ userAuth.addEventListener("submit", async (e) => {
       },
     });
     contactsData = await contactsResponse.json();
+
     setCardsData(contactsData.contacts);
+    isLoading(false);
     e.target.submit();
   } else {
     const errorText = e.target.parentNode.querySelector(".error-message");
     errorText.classList.remove("hidden");
     errorText.innerText = `Error: ${userData.message}`;
   }
+  isLoading(false);
 });
 
 // CREATE NEW CONTACT
 newContact.addEventListener("submit", async (e) => {
+  isLoading(true);
   e.preventDefault();
   const token = getToken();
   if (!token) return;
@@ -206,6 +220,7 @@ newContact.addEventListener("submit", async (e) => {
   });
 
   const data = await response.json();
+  isLoading(false);
 
   if (response.status === 200 || response.status === 201) {
     const position = cards.length + 1;
@@ -240,12 +255,6 @@ prevButton.addEventListener("click", () => {
 // close form button
 closeFormButton.addEventListener("click", () => closeForm());
 
-// clearButton
-// clearButton.addEventListener("click", () => {
-//   removeAll(true);
-//   updateSliderCounter();
-// });
-
 //logout
 logoutButton.addEventListener("click", (e) => {
   localStorage.removeItem("token");
@@ -253,10 +262,30 @@ logoutButton.addEventListener("click", (e) => {
   userForm.classList.remove("hidden");
 });
 
-// click on card to turn it
+// listen for click event on card (to turn or delete it)
 cardsDIV.addEventListener("click", (e) => {
-  const card = e.target.closest(".card");
-  const inner = card.querySelector(".card-inner");
-  if (inner.classList.contains("rotate")) inner.classList.remove("rotate");
-  else inner.classList.add("rotate");
+  if (e.target.classList.contains("delete-card")) {
+    isLoading(true);
+    const token = getToken();
+    contactId = e.target.dataset.id;
+    fetch("http://localhost:5000/contacts/" + contactId, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        isLoading(false);
+        if (currentCard === cards.length) currentCard--;
+        cards = cards.filter((card) => card._id !== contactId);
+        setCardsData(cards);
+        renderCards();
+      });
+  } else {
+    const card = e.target.closest(".card");
+    const inner = card.querySelector(".card-inner");
+    if (inner.classList.contains("rotate")) inner.classList.remove("rotate");
+    else inner.classList.add("rotate");
+  }
 });
