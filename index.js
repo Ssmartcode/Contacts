@@ -15,8 +15,7 @@ const logoutButton = document.querySelector(".logout-button");
 // ! Local storage functions
 //get cards array from local storage
 const getCardsData = () => {
-  const cards = JSON.parse(localStorage.getItem("cards"));
-  return cards;
+  return JSON.parse(localStorage.getItem("cards"));
 };
 
 // add cards array to local storage
@@ -28,16 +27,14 @@ const setToken = (token) => {
   localStorage.setItem("token", token);
 };
 const getToken = () => {
-  const token = localStorage.getItem("token");
-  return token;
+  return localStorage.getItem("token");
 };
 
 // ! ------------------------
 
-const token = localStorage.getItem("token");
-if (token) {
-  userForm.classList.add("hidden");
-} else userForm.classList.remove("hidden");
+const token = getToken();
+if (token) userForm.classList.add("hidden");
+else userForm.classList.remove("hidden");
 
 // cards array
 let cards = getCardsData();
@@ -158,8 +155,9 @@ userAuth.addEventListener("submit", async (e) => {
     },
     body: JSON.stringify({ userName, userPassword }),
   });
-
   const userData = await userResponse.json();
+
+  let contactsData;
   if (userResponse.status === 200 || userResponse.status === 201) {
     setToken(userData.token);
     const contactsResponse = await fetch("http://localhost:5000/contacts", {
@@ -168,25 +166,19 @@ userAuth.addEventListener("submit", async (e) => {
         Authorization: `Bearer ${userData.token}`,
       },
     });
-    const contactsData = await contactsResponse.json();
+    contactsData = await contactsResponse.json();
     setCardsData(contactsData.contacts);
     e.target.submit();
   } else {
     const errorText = e.target.parentNode.querySelector(".error-message");
     errorText.classList.remove("hidden");
-    errorText.innerText = `Error: ${data.message}`;
+    errorText.innerText = `Error: ${userData.message}`;
   }
-});
-
-// get image from new contact form and store it in a global variable
-document.getElementById("contactImage").addEventListener("change", (e) => {
-  imageFile = e.target.files[0];
 });
 
 // CREATE NEW CONTACT
 newContact.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const token = getToken();
   if (!token) return;
 
@@ -195,6 +187,7 @@ newContact.addEventListener("submit", async (e) => {
   const contactPhone = document.getElementById("contactPhone").value;
   const contactEmail = document.getElementById("contactEmail").value;
   const contactWebsite = document.getElementById("contactWebsite").value;
+  const imageFile = document.getElementById("contactImage").files[0];
 
   const formData = new FormData();
   formData.append("contactName", contactName);
@@ -213,10 +206,13 @@ newContact.addEventListener("submit", async (e) => {
   });
 
   const data = await response.json();
+
   if (response.status === 200 || response.status === 201) {
-    const id = cards.length + 1;
-    cards.push(response.contact);
-    currentCard = id;
+    const position = cards.length + 1;
+    cards.push(data.contact);
+    setCardsData(cards);
+    currentCard = position;
+    newCardForm.classList.add("hidden");
     e.target.submit();
   } else {
     const errorText = e.target.parentNode.querySelector(".error-message");
