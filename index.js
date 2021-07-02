@@ -51,6 +51,13 @@ const isLoading = (loading) => {
   else loadingOverlay.classList.add("hide");
 };
 
+// display error
+const displayError = (target, message) => {
+  const errorText = target.parentNode.querySelector(".error-message");
+  errorText.classList.remove("hidden");
+  errorText.innerText = `Error: ${message}`;
+};
+
 // update the slider counter below the cards
 const updateSliderCounter = () => {
   const current = document.querySelector(".cards-counter .current");
@@ -151,6 +158,7 @@ let signupRequest;
 loginButton.addEventListener("click", () => (signupRequest = false));
 signupButton.addEventListener("click", () => (signupRequest = true));
 
+// Login or singup the user and gets user data (token)
 userAuth.addEventListener("submit", async (e) => {
   isLoading(true);
   e.preventDefault();
@@ -158,43 +166,58 @@ userAuth.addEventListener("submit", async (e) => {
 
   const userPassword = document.getElementById("password").value;
   const path = signupRequest ? "signup" : "login";
-  const userResponse = await fetch(`http://localhost:5000/users/${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ userName, userPassword }),
-  });
+
+  let userResponse;
+  try {
+    userResponse = await fetch(`http://localhost:5000/users/${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userName, userPassword }),
+    });
+  } catch (err) {
+    displayError(e.target, "Something went wrong. Please try again later");
+    return isLoading(false);
+  }
   const userData = await userResponse.json();
 
+  // Get user contacts from the server
   let contactsData;
   if (userResponse.status === 200 || userResponse.status === 201) {
     setToken(userData.token);
-    const contactsResponse = await fetch("http://localhost:5000/contacts", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${userData.token}`,
-      },
-    });
-    contactsData = await contactsResponse.json();
+    try {
+      const contactsResponse = await fetch("http://localhost:5000/contacts", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      contactsData = await contactsResponse.json();
+    } catch (err) {
+      displayError(e.target, userData.message);
+      return isLoading(false);
+    }
 
     setCardsData(contactsData.contacts);
     isLoading(false);
     e.target.submit();
   } else {
-    const errorText = e.target.parentNode.querySelector(".error-message");
-    errorText.classList.remove("hidden");
-    errorText.innerText = `Error: ${userData.message}`;
+    displayError(e.target, userData.message);
+    isLoading(false);
   }
-  isLoading(false);
 });
 
 // CREATE NEW CONTACT
 newContact.addEventListener("submit", async (e) => {
   isLoading(true);
   e.preventDefault();
+
   const token = getToken();
-  if (!token) return;
+  if (!token) {
+    displayError(e.target, "Something went wrong. Pleaset try again later");
+    return isLoading(false);
+  }
 
   const contactName = document.getElementById("contactName").value;
   const contactRelation = document.getElementById("contactRelation").value;
@@ -211,16 +234,20 @@ newContact.addEventListener("submit", async (e) => {
   formData.append("contactWebsite", contactWebsite);
   formData.append("contactImage", imageFile);
 
-  const response = await fetch("http://localhost:5000/contacts", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: formData,
-  });
-
+  let response;
+  try {
+    response = await fetch("http://localhost:5000/contacts", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+  } catch (err) {
+    displayError(e.target, "Something went wrong, try again later");
+    return isLoading(false);
+  }
   const data = await response.json();
-  isLoading(false);
 
   if (response.status === 200 || response.status === 201) {
     const position = cards.length + 1;
@@ -230,9 +257,7 @@ newContact.addEventListener("submit", async (e) => {
     newCardForm.classList.add("hidden");
     e.target.submit();
   } else {
-    const errorText = e.target.parentNode.querySelector(".error-message");
-    errorText.classList.remove("hidden");
-    errorText.innerText = `Error: ${data.message}`;
+    displayError(e.target, data.message);
   }
 });
 
@@ -274,13 +299,19 @@ cardsDIV.addEventListener("click", (e) => {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
-      .then((data) => {
+      .then((response) => {
+        if (!response.ok) throw "Something went wrong";
+        return response.json();
+      })
+      .then((response) => {
         isLoading(false);
         if (currentCard === cards.length) currentCard--;
         cards = cards.filter((card) => card._id !== contactId);
         setCardsData(cards);
         renderCards();
+      })
+      .catch((err) => {
+        return isLoading(false);
       });
   } else {
     const card = e.target.closest(".card");

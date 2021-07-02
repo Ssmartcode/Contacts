@@ -10,7 +10,9 @@ exports.get = async (req, res, next) => {
 };
 exports.create = async (req, res, next) => {
   const user = await User.findById(req.userData.userId);
-
+  if (!req.file) {
+    return res.status(404).json({ message: "No image provided" });
+  }
   const {
     contactName,
     contactRelation,
