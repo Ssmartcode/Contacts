@@ -107,7 +107,7 @@ const renderCards = () => {
       "beforeend",
       `<div class="card-inner">
       <div class="card-face">
-        <div class="profile-image"><img src=http://localhost:5000/${contactImage}></div>
+        <div class="profile-image"><img src=https://cards-contacts.herokuapp.com/${contactImage}></div>
         <div class="about">
             <p class="about--name">${contactName}</p>
             <p class="about--description">${contactRelation}</p>
@@ -169,7 +169,7 @@ userAuth.addEventListener("submit", async (e) => {
 
   let userResponse;
   try {
-    userResponse = await fetch(`http://localhost:5000/users/${path}`, {
+    userResponse = await fetch(`https://cards-contacts.herokuapp.com/users/${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -187,7 +187,7 @@ userAuth.addEventListener("submit", async (e) => {
   if (userResponse.status === 200 || userResponse.status === 201) {
     setToken(userData.token);
     try {
-      const contactsResponse = await fetch("http://localhost:5000/contacts", {
+      const contactsResponse = await fetch("https://cards-contacts.herokuapp.com/contacts", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${userData.token}`,
@@ -236,7 +236,7 @@ newContact.addEventListener("submit", async (e) => {
 
   let response;
   try {
-    response = await fetch("http://localhost:5000/contacts", {
+    response = await fetch("https://cards-contacts.herokuapp.com/contacts", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -293,7 +293,7 @@ cardsDIV.addEventListener("click", (e) => {
     isLoading(true);
     const token = getToken();
     contactId = e.target.dataset.id;
-    fetch("http://localhost:5000/contacts/" + contactId, {
+    fetch("https://cards-contacts.herokuapp.com/contacts/" + contactId, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

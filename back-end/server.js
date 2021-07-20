@@ -22,6 +22,6 @@ app.use(express.static(path.join(__dirname, "images")));
 app.use("/users", require("./routes/users"));
 app.use("/contacts", require("./routes/contacts"));
 
-app.listen("5000", () => {
+app.listen(process.env.PORT || "5000", () => {
   console.log("Connected on port 5000");
 });
